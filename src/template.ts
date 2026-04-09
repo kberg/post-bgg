@@ -1,7 +1,7 @@
 // Loads and compiles a Handlebars template file, then renders it against a GameEntry.
 import Handlebars from 'handlebars';
 import * as fs from 'fs';
-import { GameEntry } from './csv-reader';
+import { GameEntry } from './game-entry';
 
 export type CompiledTemplate = HandlebarsTemplateDelegate<GameEntry>;
 

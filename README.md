@@ -1,6 +1,6 @@
 # post-bgg
 
-Posts entries to a BoardGameGeek geeklist from a CSV file.
+Posts entries to a BoardGameGeek geeklist from a CSV file or public Google Sheet.
 
 ## Setup
 
@@ -25,6 +25,7 @@ Six columns, header row required (see `data/games.csv.sample`):
 - **Cost**: leading `$` is optional — the template adds it
 - **URL**: must be a `boardgamegeek.com` game URL — the numeric BGG ID is extracted automatically
 - Column headers are case-insensitive
+- For `--sheet`, the Google Sheet must be shared as "Anyone with the link can view"
 
 ## Template
 
@@ -44,11 +45,15 @@ Handlebars built-ins work normally, e.g. `{{#if cost}}Price is firm.{{/if}}`.
 ## Usage
 
 ```bash
-# Preview rendered entries without posting
+# Preview rendered entries without posting (CSV)
 npx ts-node src/index.ts --csv games.csv --dry-run
+
+# Preview rendered entries without posting (Google Sheet)
+npx ts-node src/index.ts --sheet "https://docs.google.com/spreadsheets/d/..." --dry-run
 
 # Post entries to a geeklist
 npx ts-node src/index.ts --csv games.csv
+npx ts-node src/index.ts --sheet "https://docs.google.com/spreadsheets/d/..."
 
 # Post only the first 3 entries
 npx ts-node src/index.ts --csv games.csv --limit 3
@@ -64,7 +69,8 @@ npx ts-node src/index.ts --csv games.csv --template my-template.hbs
 
 | Flag | Required | Description |
 |------|----------|-------------|
-| `--csv <path>` | Yes | Path to input CSV file |
+| `--csv <path>` | One of `--csv`/`--sheet` | Path to input CSV file |
+| `--sheet <url>` | One of `--csv`/`--sheet` | URL of a public Google Sheet |
 | `--geeklist <id>` | No | BGG geeklist ID (overrides `BGG_GEEKLIST` in `.env`) |
 | `--template <path>` | No | Path to `.hbs` template (default: `templates/entry.hbs`) |
 | `--limit <n>` | No | Only process the first N available entries |

@@ -1,8 +1,10 @@
-// Entry point. Orchestrates CSV reading, template rendering, and BGG posting.
+// Entry point. Orchestrates CSV/sheet reading, template rendering, and BGG posting.
 import 'dotenv/config';
 import { Command } from 'commander';
 import * as path from 'path';
-import { GameEntry, readCsv } from './csv-reader';
+import { GameEntry } from './game-entry';
+import { readCsv } from './csv-reader';
+import { readSheet } from './sheet-reader';
 import { loadTemplate, renderEntry } from './template';
 import { BggClient, sleep } from './bgg-client';
 
@@ -14,8 +16,9 @@ async function main() {
 
   program
     .name('post-bgg')
-    .description('Post entries to a BGG geeklist from a CSV file')
-    .requiredOption('--csv <path>', 'Path to input CSV file')
+    .description('Post entries to a BGG geeklist from a CSV file or Google Sheet')
+    .option('--csv <path>', 'Path to input CSV file')
+    .option('--sheet <url>', 'URL of a public Google Sheet')
     .option('--geeklist <id>', 'BGG geeklist ID to post to (overrides BGG_GEEKLIST in .env)', parseInt)
     .option('--template <path>', 'Path to Handlebars template file', DEFAULT_TEMPLATE)
     .option('--dry-run', 'Render entries and print them without posting', false)
@@ -23,12 +26,22 @@ async function main() {
     .parse();
 
   const opts = program.opts<{
-    csv: string;
+    csv: string | undefined;
+    sheet: string | undefined;
     geeklist: number | undefined;
     template: string;
     dryRun: boolean;
     limit: number | undefined;
   }>();
+
+  if (!opts.csv && !opts.sheet) {
+    console.error('Error: one of --csv or --sheet is required');
+    process.exit(1);
+  }
+  if (opts.csv && opts.sheet) {
+    console.error('Error: --csv and --sheet are mutually exclusive');
+    process.exit(1);
+  }
 
   const username = process.env.BGG_USERNAME;
   const password = process.env.BGG_PASSWORD;
@@ -46,11 +59,12 @@ async function main() {
     }
   }
 
+  const source = opts.csv ?? opts.sheet!;
   let entries: Array<GameEntry>;
   try {
-    entries = await readCsv(opts.csv);
+    entries = opts.csv ? await readCsv(opts.csv) : await readSheet(opts.sheet!);
   } catch (e) {
-    console.error(`CSV error: ${(e as Error).message}`);
+    console.error(`Error reading input: ${(e as Error).message}`);
     process.exit(1);
   }
 
@@ -58,7 +72,7 @@ async function main() {
     entries = entries.slice(0, opts.limit);
   }
 
-  console.log(`Loaded ${entries.length} entries from ${opts.csv}`);
+  console.log(`Loaded ${entries.length} entries from ${source}`);
 
   const template = loadTemplate(opts.template);
 
