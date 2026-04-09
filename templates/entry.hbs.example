@@ -1,0 +1,10 @@
+{{!-- Copy this file to entry.hbs and edit to your liking.
+     Available variables: title, cost, condition, notes, url, bggId --}}
+{{#if cost}}${{cost}}{{/if}}
+
+{{#if condition}}Condition: {{condition}}
+{{/if}}
+{{#if notes}}{{notes}}
+{{/if}}
+
+Pickup anywhere in NYC. Trades welcome.
