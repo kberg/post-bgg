@@ -42,7 +42,7 @@ export function parseContent(content: string): Promise<GameEntry[]> {
         if (!title) continue;
         // 'X' in the Available column means the item has been sold/removed.
         if (available?.trim().toUpperCase() === 'X') continue;
-        if (!url) throw new Error(`Row ${rowNum}: missing 'url'`);
+        if (!url) return reject(new Error(`Row ${rowNum}: missing 'url'`));
 
         let bggId: number;
         try {

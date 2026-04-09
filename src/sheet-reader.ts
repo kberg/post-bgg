@@ -7,7 +7,8 @@ export { GameEntry };
 
 // Builds the CSV export URL from a Google Sheets share/edit URL.
 // Handles both /edit#gid=... and /edit?gid=... forms.
-function toExportUrl(sheetUrl: string): string {
+// Exported for testing.
+export function toExportUrl(sheetUrl: string): string {
   const idMatch = /\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/.exec(sheetUrl);
   if (!idMatch) throw new Error(`Could not extract spreadsheet ID from URL: ${sheetUrl}`);
   const id = idMatch[1];
